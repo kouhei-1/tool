@@ -53,5 +53,6 @@ function generatePrimeNumbers() {
 function openURI(){
   generate();
   var URItxt='data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-  open(URItxt,"_blank")
+  console.log(URItxt);
+  open(URItxt,"_blank");
 }
