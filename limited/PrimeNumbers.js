@@ -18,7 +18,7 @@ function generatePrimeNumbers() {
 }
 */
 
-function generatePrimeNumbers() {
+function generate(){
   const upperLimit = parseInt(document.getElementById('upperLimit').value);
   const primes = Array(upperLimit + 1).fill(true);
   primes[0] = primes[1] = false;
@@ -39,9 +39,19 @@ function generatePrimeNumbers() {
   }
   // CSV形式に変換
   const csvContent = primeNumbers.join(',');
+
+}
+
+function generatePrimeNumbers() {
+  generate();
   // ダウンロードリンクの作成
   const downloadLink = document.createElement('a');
   downloadLink.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
   downloadLink.download='primeNumbers.csv'
   downloadLink.click();
+}
+function openURI(){
+  generate();
+  var URItxt='data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+  open(URItxt,"_blank")
 }
