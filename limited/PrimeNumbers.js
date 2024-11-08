@@ -51,6 +51,7 @@ function generatePrimeNumbers() {
   downloadLink.click();
 }
 function openURI(){
+  console.log("openURL");
   generate();
   var URItxt='data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
   console.log(URItxt);
