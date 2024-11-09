@@ -19,8 +19,8 @@ function generatePrimeNumbers() {
 */
 
 function generate(){
-  var upperLimit = parseInt(document.getElementById('upperLimit').value);
-  var primes = Array(upperLimit + 1).fill(true);
+  const upperLimit = parseInt(document.getElementById('upperLimit').value);
+  const primes = Array(upperLimit + 1).fill(true);
   primes[0] = primes[1] = false;
 
   for (let p = 2; p * p <= upperLimit; p++) {
@@ -31,14 +31,14 @@ function generate(){
     }
   }
 
-  var primeNumbers = [];
+  const primeNumbers = [];
   for (let i = 2; i <= upperLimit; i++) {
     if (primes[i]) {
       primeNumbers.push(i);
     }
   }
   // CSV形式に変換
-  var csvContent = primeNumbers.join(',');
+  const csvContent = primeNumbers.join(',');
 
 }
 
