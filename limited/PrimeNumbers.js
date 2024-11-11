@@ -37,7 +37,7 @@ function generatePrimeNumbers() {
     }
   }
   // CSV形式に変換
-  const csvContent = primeNumbers.join(',');
+  const csvContent = primeNumbers.join(`\n`);
   // ダウンロードリンクの作成
   const downloadLink = document.createElement('a');
   downloadLink.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
