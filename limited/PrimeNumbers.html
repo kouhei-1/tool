@@ -9,7 +9,11 @@
   <h1>PrimeNumbers</h1>
   上限値を入力するとそこまでの素数がダウンロードできます。<br>
   <input type="number" id="upperLimit" placeholder="上限値を入力"><br>
-  <button onclick="generatePrimeNumbers()">生成</button>
+  <button onclick="generatePrimeNumbers()">生成</button><br>
+  <select id="delimiter">
+    <option value="enter">enter</option>
+    <option value="comma">comma</option>
+  </select>
   <a id="downloadLink" download="prime_numbers.csv" style="display: none;">ダウンロード</a>
   <script src="./PrimeNumbers.js"></script>
 </body>
