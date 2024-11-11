@@ -18,6 +18,14 @@ function generatePrimeNumbers() {
 }
 */
 function generatePrimeNumbers() {
+  //以下区切り値
+  const delimiter_select=document.getElementById("delimiter").value
+  if(delimiter_select == "enter"){
+    const delimiter_txt="\n"
+  }else{
+    const delimiter_txt=","
+  }
+
   const upperLimit = parseInt(document.getElementById('upperLimit').value);
   const primes = Array(upperLimit + 1).fill(true);
   primes[0] = primes[1] = false;
@@ -37,7 +45,7 @@ function generatePrimeNumbers() {
     }
   }
   // CSV形式に変換
-  const csvContent = primeNumbers.join(`\n`);
+  const csvContent = primeNumbers.join(delimiter_txt);
   // ダウンロードリンクの作成
   const downloadLink = document.createElement('a');
   downloadLink.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
