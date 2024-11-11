@@ -17,27 +17,6 @@ function generatePrimeNumbers() {
   }
 }
 */
-
-/*
-function isPrime(num) {
-  // 素数判定関数
-  for(let i = 2, sqrt = Math.sqrt(num); i <= sqrt; i++)
-  if(num % i === 0) return false; 
-  return num > 1;
-}
-
-function generatePrimeNumbers() {
-  const upperLimit = document.getElementById('upperLimit').value;
-  let primeNumbers = [];
-
-  for (let i = 2; i <= upperLimit; i++) {
-    if (isPrime(i)) {
-      primeNumbers.push(i);
-    }
-  }
-}
-*/
-
 function generatePrimeNumbers() {
   const upperLimit = parseInt(document.getElementById('upperLimit').value);
   const primes = Array(upperLimit + 1).fill(true);
