@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch API Data</title>
+</head>
+<body>
+    <h1>Scratch API Data</h1>
+    <div id="data-output">Loading...</div>
+
+    <script>
+        // Scratch APIのURL
+        const apiUrl = "https://api.scratch.mit.edu";
+
+        // APIからデータを取得する関数
+        async function fetchData() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTPエラー: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                // 取得したデータを表示
+                document.getElementById("data-output").textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById("data-output").textContent = `エラー: ${error.message}`;
+            }
+        }
+
+        // ページ読み込み時にデータを取得
+        fetchData();
+    </script>
+</body>
+</html>
