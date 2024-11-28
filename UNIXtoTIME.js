@@ -3,7 +3,7 @@ function unixToUtc(unixTime) {
     return "Invalid Unix timestamp";
   }
   const date = new Date(unixTime * 1000);
-  return date.toISOString().replace(/\.\d+Z$/, 'Z');
+  return date.toISOString();
 }
 
 document.getElementById("Unix_form").addEventListener("keydown", function(event) {
