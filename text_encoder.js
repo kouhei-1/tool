@@ -84,12 +84,12 @@ function decodeText() {
 function ChangeEncoding(){
     var selectedEncoding = document.getElementById('encoding_select').value;
     const url = new URL(window.location.href); 
-    url.searchParams.set('method', encodeURIComponent(selectedEncoding)); // keyの値をnewValueに更新（または追加）
+    Params.set('method', encodeURIComponent(selectedEncoding)); // keyの値をnewValueに更新（または追加）
     console.log(selectedEncoding)
 }
 
 const url = new URL(window.location.href); // 現在のURLを取得
-const params = url.searchParams; 
+let params = new URLSearchParams(url.search);
 // 特定のパラメータを取得
 var method = params.get('method');
 if(params.has('method')==false){
