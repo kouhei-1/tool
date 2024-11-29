@@ -8,6 +8,10 @@
         body {
             font-family: Arial, sans-serif;
         }
+        #small_text{
+            font-size: 5px;
+        }
+        
     </style>
 </head>
 <body>
@@ -38,8 +42,8 @@
 
     <button onclick="decodeText()">Decode</button>
 
-    <script src="./text_encoder.js"></script>
+    <script src="./text_encoder.js"></script><br>
 
-    UTF-16やShift-Jisのライブラリないですか
+    <p id="small_text">UTF-8は%エスケープシーケンス,UTF-16は\uエスケープシーケンスで出力されます。</p>
 </body>
 </html>
