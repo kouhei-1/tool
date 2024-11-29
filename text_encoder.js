@@ -85,7 +85,7 @@ const url = new URL(window.location.href); // 現在のURLを取得
 const params = url.searchParams; 
 // 特定のパラメータを取得
 var method = params.get('method');
-if("https://kouhei-1.github.io/tool/text_encoder.html" == window.location.href){
+if(params.has('method')==false){
   method = "utf-8"
 }
 document.getElementById("encoding_select").value = method
