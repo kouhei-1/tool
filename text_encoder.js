@@ -85,7 +85,7 @@ const url = new URL(window.location.href); // 現在のURLを取得
 const params = url.searchParams; 
 // 特定のパラメータを取得
 var method = params.get('method');
-if(method == ""){
+if(method.length < 2){
   method = "utf-8"
 }
 document.getElementById("encoding_select").value = method
