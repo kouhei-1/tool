@@ -81,6 +81,12 @@ function decodeText() {
   document.getElementById('text_input').value = result;
 }
 
+function ChangeEncoding(){
+    var selectedEncoding = document.getElementById('encoding_select').value;
+    const url = new URL(window.location.href); 
+    url.searchParams.set('method', selectedEncoding); // keyの値をnewValueに更新（または追加）
+}
+
 const url = new URL(window.location.href); // 現在のURLを取得
 const params = url.searchParams; 
 // 特定のパラメータを取得
