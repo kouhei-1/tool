@@ -80,3 +80,9 @@ function decodeText() {
 
   document.getElementById('text_input').value = result;
 }
+
+const url = new URL(window.location.href); // 現在のURLを取得
+const params = url.searchParams; 
+
+// 特定のパラメータを取得
+const value = params.get('method'); 
