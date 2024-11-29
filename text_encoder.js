@@ -83,6 +83,6 @@ function decodeText() {
 
 const url = new URL(window.location.href); // 現在のURLを取得
 const params = url.searchParams; 
-
 // 特定のパラメータを取得
-const value = params.get('method'); 
+const method = params.get('method'); 
+document.getElementById("encoding_select").value = method
