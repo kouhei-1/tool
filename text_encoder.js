@@ -23,10 +23,10 @@ function encodeText() {
     case 'utf-16':
       // 文字列を\uXXXX形式にエンコード
       function encodeToUnicodeEscape(str) {
-        let encoded_utf-16 = '';
+        let encoded_utf_16 = '';
         for (let i = 0; i < str.length; i++) {
-          const code = str.charCodeAt(i).toString(16).padStart(4, '0');
-          encoded_utf-16 += '\\u' + code;
+          const code_utf_16 = str.charCodeAt(i).toString(16).padStart(4, '0');
+          encoded_utf_16 += '\\u' + code_utf_16;
         }
         return encoded;
       }
