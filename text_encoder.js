@@ -84,7 +84,8 @@ function decodeText() {
 function ChangeEncoding(){
     var selectedEncoding = document.getElementById('encoding_select').value;
     const url = new URL(window.location.href); 
-    Params.set('method', encodeURIComponent(selectedEncoding)); // keyの値をnewValueに更新（または追加）
+    let params = new URLSearchParams(url.search);
+    params.set('method', encodeURIComponent(selectedEncoding)); // keyの値をnewValueに更新（または追加）
     console.log(selectedEncoding)
 }
 
