@@ -81,12 +81,14 @@ function decodeText() {
   document.getElementById('text_input').value = result;
 }
 
-function ChangeEncoding(){
+function ChangeEncoding() {
     var selectedEncoding = document.getElementById('encoding_select').value;
     const url = new URL(window.location.href); 
     let params = new URLSearchParams(url.search);
-    params.set('method', encodeURIComponent(selectedEncoding)); // keyの値をnewValueに更新（または追加）
-    console.log(selectedEncoding)
+    params.set('method', encodeURIComponent(selectedEncoding)); // エンコーディングを更新
+    url.search = params.toString(); // URLのクエリ部分を更新
+    window.history.replaceState({}, '', url.toString()); // URLを変更 (履歴を追加しない)
+    console.log("Encoding changed to:", selectedEncoding);
 }
 
 const url = new URL(window.location.href); // 現在のURLを取得
