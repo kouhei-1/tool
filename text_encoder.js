@@ -85,6 +85,7 @@ function ChangeEncoding(){
     var selectedEncoding = document.getElementById('encoding_select').value;
     const url = new URL(window.location.href); 
     url.searchParams.set('method', selectedEncoding); // keyの値をnewValueに更新（または追加）
+    console.log("debug_change_encode")
 }
 
 const url = new URL(window.location.href); // 現在のURLを取得
