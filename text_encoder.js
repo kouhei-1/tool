@@ -19,10 +19,21 @@ function encodeText() {
     case 'utf-8':
       result = encodeURIComponent(textToEncode);
       break;
-    /*
-    case 'utf-16':
-    break;
     
+    case 'utf-16':
+      // 文字列を\uXXXX形式にエンコード
+      function encodeToUnicodeEscape(str) {
+        let encoded_utf-16 = '';
+        for (let i = 0; i < str.length; i++) {
+          const code = str.charCodeAt(i).toString(16).padStart(4, '0');
+          encoded_utf-16 += '\\u' + code;
+        }
+        return encoded;
+      }
+      result = encodeToUnicodeEscape(textToEncode);
+    break;
+      
+    /*
     case 'shift_jis':
     break;
     */
@@ -47,9 +58,18 @@ function decodeText() {
     case 'utf-8':
       result = decodeURIComponent(encodedText);
       break;
-    /*
+    
     case 'utf-16':
+      // \uXXXX形式の文字列をデコード
+      function decodeFromUnicodeEscape(str) {
+        return str.replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => {
+          return String.fromCharCode(parseInt(code, 16));
+        });
+      }
+      result = decodeFromUnicodeEscape(encodedText);
       break;
+
+    /*
     case 'shift_jis':
       break;
     */
