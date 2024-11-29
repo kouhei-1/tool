@@ -7,4 +7,4 @@
 [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP)
 
 ### JS-LIBRARY
-[Encoding.js](https://github.com/polygonplanet/encoding.js)
+empty
