@@ -28,7 +28,7 @@ function encodeText() {
           const code_utf_16 = str.charCodeAt(i).toString(16).padStart(4, '0');
           encoded_utf_16 += '\\u' + code_utf_16;
         }
-        return encoded;
+        return encoded_utf_16;
       }
       result = encodeToUnicodeEscape(textToEncode);
     break;
