@@ -80,7 +80,6 @@ function ChangeEncoding() {
     params.set('method', encodeURIComponent(selectedEncoding)); // エンコーディングを更新
     url.search = params.toString(); // URLのクエリ部分を更新
     window.history.replaceState({}, '', url.toString()); // URLを変更 (履歴を追加しない)
-    console.log("Encoding changed to:", selectedEncoding);
 }
 
 const url = new URL(window.location.href); // 現在のURLを取得
