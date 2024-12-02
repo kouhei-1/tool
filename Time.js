@@ -1,5 +1,5 @@
 //("0"+num).slice(-2)
-function showTime() {
+function showTime(){
   var now = new Date();
   var year = now.getFullYear();
   var month = ("0"+(now.getMonth()+1)).slice(-2);
@@ -12,7 +12,7 @@ function showTime() {
   document.getElementById("Local_time").innerHTML = "Local_time: " + text;
 }
 
-function UTCTime() {
+function UTCTime(){
   var UTC_now = new Date();
   var UTC_year = UTC_now.getUTCFullYear();
   var UTC_month = ("0"+(UTC_now.getUTCMonth()+1)).slice(-2);
@@ -25,7 +25,7 @@ function UTCTime() {
   document.getElementById("UTC_time").innerHTML = "UTC_time: " + UTC_text;
 }
 
-function Unixtime_script() {
+function Unixtime_script(){
   var unixTime = Date.now() / 1000;
   document.getElementById("Unixtime").innerHTML = "Unixtime: " + unixTime.toFixed(3);
   document.getElementById("Unixbinary").innerHTML = "Unixbinary: " + (unixTime-(unixTime%1)).toString(2);
