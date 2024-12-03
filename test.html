@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クリップボードにコピー</title>
+</head>
+<body>
+    <h1>クリップボードにコピーするデモ</h1>
+    <p id="textToCopy">これはクリップボードにコピーされるテキストです。</p>
+    <button id="copyButton">コピーする</button>
+
+    <script>
+        document.getElementById("copyButton").addEventListener("click", function() {
+            // コピーしたいテキストを取得
+            const textToCopy = document.getElementById("textToCopy").textContent;
+
+            // テキストをクリップボードにコピー
+            navigator.clipboard.writeText(textToCopy).then(function() {
+                alert("テキストがクリップボードにコピーされました: " + textToCopy);
+            }).catch(function(error) {
+                alert("コピーに失敗しました: " + error);
+            });
+        });
+    </script>
+</body>
+</html>
