@@ -46,6 +46,7 @@ div {
 
 label {
   font-weight: bold;
+  margin: 5px
 }
 
 select, textarea, button {
