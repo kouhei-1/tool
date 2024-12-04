@@ -21,7 +21,7 @@ function encodeText() {
           })
           .join('');
       }
-      result = utf8Encode(textToEncode));
+      result = utf8Encode(textToEncode);
       break;
     
     case 'utf-16':
