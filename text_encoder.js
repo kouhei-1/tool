@@ -9,7 +9,19 @@ function encodeText() {
     break;
     
     case 'utf-8':
-      result = encodeURIComponent(textToEncode);
+      function utf8Encode(str) {
+        return Array.from(str)
+          .map(char => {
+          // 各文字をUTF-8エンコードしてバイト列を取得
+          const utf8Bytes = new TextEncoder().encode(char);
+          // 各バイトを`%XX`形式に変換
+          return Array.from(utf8Bytes)
+            .map(byte => '%' + byte.toString(16).toUpperCase())
+            .join('');
+          })
+          .join('');
+      }
+      result = utf8Encode(textToEncode));
       break;
     
     case 'utf-16':
