@@ -11,9 +11,7 @@ a {
   text-decoration: none;
   color: #007BFF;
   font-weight: bold;
-  #tool_link {
-    margin: 5px;
-  }
+  margin: 5px;
 }
 
 a:hover {
