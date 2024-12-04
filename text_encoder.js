@@ -9,7 +9,7 @@ function encodeText() {
     break;
     
     case 'utf-8':
-      result = encodeURIComponent(textToEncode);
+      result = escape(textToEncode);
       break;
     
     case 'utf-16':
