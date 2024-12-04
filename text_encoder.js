@@ -9,15 +9,9 @@ function encodeText() {
     break;
     
     case 'utf-8':
-      function customEncodeURIComponent(str) {
-       return str.split('')
-         .map(char => '%' + char.charCodeAt(0).toString(16).toUpperCase())
-         .join('');
-      }
-
-      result = customEncodeURIComponent(textToEncode);
-    break;
-      
+      result = encodeURIComponent(textToEncode);
+      break;
+    
     case 'utf-16':
       // 文字列を\uXXXX形式にエンコード
       function encodeToUnicodeEscape(str) {
