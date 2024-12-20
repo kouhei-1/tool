@@ -1,4 +1,30 @@
 //("0"+num).slice(-2)
+
+function decimalToBinary(decimal) {
+  // 整数部分と小数部分を分割
+  const integerPart = Math.floor(decimal); // 整数部分
+  let fractionalPart = decimal - integerPart; // 小数部分
+
+  // 整数部分を二進数に変換
+  let integerBinary = integerPart.toString(2);
+
+  // 小数部分を二進数に変換
+  let fractionalBinary = "";
+  while (fractionalPart > 0) {
+    // 10回以上ループさせる場合、適当に途中で切り上げ（丸め）る
+    if (fractionalBinary.length > 10) break;
+    fractionalPart *= 2;
+    if (fractionalPart >= 1) {
+      fractionalBinary += "1";
+      fractionalPart -= 1;
+    } else {
+      fractionalBinary += "0";
+    }
+  }
+
+  // 二進数の結果を結合
+  return fractionalBinary ? `${integerBinary}.${fractionalBinary}` : integerBinary;
+}
 function showTime(){
   var now = new Date();
   var year = now.getFullYear();
@@ -28,7 +54,7 @@ function UTCTime(){
 function Unixtime_script(){
   var unixTime = Date.now() / 1000;
   document.getElementById("Unixtime").innerHTML = "Unixtime: " + unixTime.toFixed(3);
-  document.getElementById("Unixbinary").innerHTML = "Unixbinary: " + (unixTime-(unixTime%1)).toString(2);
+  document.getElementById("Unixbinary").innerHTML = "Unixbinary: " + decimalToBinary(unixTime);
 }
 
 setInterval(showTime, 17);
