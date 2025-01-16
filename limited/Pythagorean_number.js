@@ -1,6 +1,10 @@
 function open_csv() {
   const parameter1 = document.getElementById("parameter1").value;
   const parameter2 = document.getElementById("parameter2").value;
+  if(!Number.isInteger(parameter1)||!Number.isInteger(parameter2)){
+    alert("Please set the parameters to Integer!")
+    break;
+  }
 
   let csvContent = "a,b,c\n";
 
