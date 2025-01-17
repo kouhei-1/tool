@@ -1,8 +1,8 @@
 function open_csv() {
   const parameter1 = document.getElementById("parameter1").value;
   const parameter2 = document.getElementById("parameter2").value;
-  if(!Number.isInteger(parameter1)||!Number.isInteger(parameter2)){
-    alert("Please set the parameters to Integer!")
+  if((!Number.isInteger(parameter1)||!Number.isInteger(parameter2))||(parameter1<1||parameter2<1)){
+    alert("Please set the parameters to natural number!")
     break;
   }
 
