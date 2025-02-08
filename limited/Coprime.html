@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+ <body>
+  <input id="num1" type="number" placeholder="Enter max a"><br>
+  <input id="num2" type="number" placeholder="Enter max b"><br>
+  <input id="pytha" type="button" onclick="open_csv();" value="Download">
+ </body>
+ 
+ <script>
+  function open_csv(){
+   g=(a,b)=>b?g(b,a%b):a
+   var maxa = document.getElementById("num1").value;
+   var maxb = document.getElementById("num2").value;
+   var Pythagorean = "a,b,c\n";
+
+   for (var a = 1; a < maxa; a++) {
+    for (var b = a; b < maxb; b++) {
+     var c = Math.sqrt(a ** 2 + b ** 2);
+     if (Number.isInteger(c)&&(g(a,b)==1)) {
+      Pythagorean += `${a},${b},${c}\n`;
+     }
+    }
+   }
+
+   const blob = new Blob([Pythagorean], {type: 'text/csv;charset=utf-8;'});
+   const url = URL.createObjectURL(blob);
+   const link = document.createElement('a');
+   link.href = url;
+   link.download = 'pythagorean_numbers.csv';
+   link.click();
+   URL.revokeObjectURL(url);
+  }
+ </script>
+</html>
