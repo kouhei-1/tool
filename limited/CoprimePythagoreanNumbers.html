@@ -19,7 +19,7 @@
 
    for (var a = 1; a < maxa; a++) {
     for (var b = a; b < maxb; b++) {
-     var c = Math.sqrt(a ** 2 + b ** 2);
+     var c = Math.hypot(a,b);
      if (Number.isInteger(c)&&(g(a,b)==1)) {
       Pythagorean += `${a},${b},${c}\n`;
      }
