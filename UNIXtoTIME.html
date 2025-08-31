@@ -2,7 +2,7 @@
 <html>
   <head>
     <style>
-      #UTC_form{
+      .UTC_form{
         width:40px;
       }
     </style>
@@ -14,21 +14,21 @@
     UTC time: <span id="UTC_time"></span><br><br>
     
     UTC time:
-    <input type="number" id="UTC_form" name="year" maxlength="8" placeholder="year"/>
+    <input type="number" class="UTC_form" name="year" maxlength="8" placeholder="year"/>
     -
-    <input type="number" id="UTC_form" name="month" maxlength="2" placeholder="month"/>
+    <input type="number" class="UTC_form" name="month" maxlength="2" placeholder="month"/>
     -
-    <input type="number" id="UTC_form" name="day" maxlength="2" placeholder="day"/>
+    <input type="number" class="UTC_form" name="day" maxlength="2" placeholder="day"/>
     T
-    <input type="number" id="UTC_form" name="hours" maxlength="2" placeholder="hour"/>
+    <input type="number" class="UTC_form" name="hours" maxlength="2" placeholder="hour"/>
     :
-    <input type="number" id="UTC_form" name="minutes" maxlength="2" placeholder="minute"/>
+    <input type="number" class="UTC_form" name="minutes" maxlength="2" placeholder="minute"/>
     :
-    <input type="number" id="UTC_form" name="seconds" maxlength="2" placeholder="second"/>
+    <input type="number" class="UTC_form" name="seconds" maxlength="2" placeholder="second"/>
     Unix time: <span id="Unix_time"></span>
     
-    
     <script>
+      // Unix → UTC
       function unixToUtc(unixTime) {
         if (isNaN(unixTime) || unixTime < 0) {
           return "Invalid Unix timestamp";
@@ -39,23 +39,39 @@
 
       document.getElementById("Unix_form").addEventListener("keydown", function(event) {
         if (event.keyCode === 13) {
-          const unixTime = document.getElementById("Unix_form").value;
+          const unixTime = Number(document.getElementById("Unix_form").value);
           const utcTime = unixToUtc(unixTime);
           if (utcTime === "Invalid Unix timestamp") {
             alert(utcTime);
-          }else{
-            document.getElementById("UTC_time").innerHTML = utcTime;
+          } else {
+            document.getElementById("UTC_time").textContent = utcTime;
           }
         }
       });
 
-
-      document.getElementById("UTC_form").addEventListener("keydown", function(event){
-        if(event.keyCode === 13){
-          const utcTime = document.getElementByName("year")[0].value+"-"+document.getElementByName("month")[0].value+"-"+document.getElementByName("day")[0].value+"T"+document.getElementByName("hours")[0].value+":"+document.getElementByName("minutes")[0].value+":"+document.getElementByName("seconds")[0].value+"Z";
-          const unixTime = utcTime.valueOf()/100;
-          document.getElementById("Unix_time").innerHTML = unixTime;
+      // UTC → Unix
+      document.querySelectorAll('.UTC_form').forEach(function(input) {
+        input.addEventListener("keydown", function(event) {
+          if (event.keyCode === 13) {
+            const year = document.getElementsByName("year")[0].value;
+            const month = document.getElementsByName("month")[0].value;
+            const day = document.getElementsByName("day")[0].value;
+            const hours = document.getElementsByName("hours")[0].value;
+            const minutes = document.getElementsByName("minutes")[0].value;
+            const seconds = document.getElementsByName("seconds")[0].value;
+            const date = new Date(Date.UTC(
+              Number(year),
+              Number(month) - 1,
+              Number(day),
+              Number(hours),
+              Number(minutes),
+              Number(seconds)
+            ));
+            const unixTime = Math.floor(date.getTime() / 1000);
+            document.getElementById("Unix_time").textContent = unixTime;
+          }
         });
+      });
     </script>
   </body>
 </html>
