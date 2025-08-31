@@ -25,8 +25,7 @@
     <input type="number" id="UTC_form" name="minutes" maxlength="2" placeholder="minute"/>
     :
     <input type="number" id="UTC_form" name="seconds" maxlength="2" placeholder="second"/>
-    .
-    <input type="number" id="UTC_form" name="milliseconds" maxlength="3" placeholder="millisecond"/>
+    Unix time: <span id="Unix_time"></span>
     
     
     <script>
@@ -49,6 +48,14 @@
           }
         }
       });
+
+
+      document.getElementById("UTC_form").addEventListener("keydown", function(event){
+        if(event.keyCode === 13){
+          const utcTime = document.getElementByName("year")[0].value+"-"+document.getElementByName("month")[0].value+"-"+document.getElementByName("day")[0].value+"T"+document.getElementByName("hours")[0].value+":"+document.getElementByName("minutes")[0].value+":"+document.getElementByName("seconds")[0].value+"Z";
+          const unixTime = utcTime.valueOf()/100;
+          document.getElementById("Unix_time").innerHTML = unixTime;
+        });
     </script>
   </body>
 </html>
