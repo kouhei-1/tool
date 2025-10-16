@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>color-mix</title>
+<style>
+  :root{ --bg:#ccc; --ui-bg:#efefef; --muted:#5f5f5f; --accent:#222; }
+  html,body{height:100%;margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans JP";color:var(--accent);}
+  .parent-link{position:fixed;left:16px;top:12px;text-decoration:none;color:var(--muted);font-size:14px;}
+  .card{width:min(960px,96vw);margin:0 auto;position:relative;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.6);border-radius:20px;padding:26px;box-shadow:0 10px 36px rgba(0,0,0,0.1);}
+  .demo{display:flex;gap:20px;align-items:center;justify-content:center;}
+  .swatch,.mix{position:relative;border-radius:32px;box-shadow:0 6px 20px rgba(0,0,0,0.1);overflow:hidden;}
+  .swatch{width:180px;height:180px;} .mix{width:240px;height:240px;}
+  input[type="color"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;}
+  .label{position:absolute;bottom:10px;right:12px;font-size:14px;font-weight:600;color:#000;text-shadow:0 0 4px rgba(255,255,255,0.6);}
+  .mix .label{left:0;right:0;bottom:auto;top:50%;text-align:center;transform:translateY(-50%);font-size:16px;}
+  .controls{margin-top:18px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:center;}
+  .slider-block{text-align:center;}
+  input[type="range"]{-webkit-appearance:none;appearance:none;width:180px;height:8px;background:rgba(0,0,0,0.1);border-radius:999px;outline:none;}
+  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid rgba(0,0,0,0.15);}
+  .percent{font-size:12px;color:rgba(0,0,0,0.65);margin-top:2px;}
+  select{padding:8px 10px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:var(--ui-bg);color:var(--muted);font-size:13px;}
+  .bottom-panel{margin-top:20px;font-size:13px;color:#222;background:rgba(255,255,255,0.9);padding:12px 14px;border-radius:12px;font-family:monospace;line-height:1.7;}
+  .bottom-panel div{padding:4px 0; display:flex; justify-content:space-between; gap:12px;}
+  .space-label{width:120px;color:rgba(0,0,0,0.6);}
+  .space-value{font-weight:700;}
+  @media(max-width:760px){.demo{flex-direction:column;}}
+</style>
+</head>
+<body>
+
+<a class="parent-link" href="../">tool</a>
+
+<main class="card" role="main" aria-labelledby="title">
+  <h1 id="title" style="display:none">color-mix</h1>
+
+  <section class="demo">
+    <div class="swatch" id="swatchA">
+      <input type="color" id="colorInputA" value="#bdbdbd">
+      <div class="label" id="hexA">#bdbdbd</div>
+    </div>
+
+    <div class="mix" id="mix">
+      <div class="label" id="hexMix">#999999</div>
+    </div>
+
+    <div class="swatch" id="swatchB">
+      <input type="color" id="colorInputB" value="#4a4a4a">
+      <div class="label" id="hexB">#4a4a4a</div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <div class="slider-block">
+      <input id="pctRangeA" type="range" min="0" max="100" value="50">
+      <div class="percent" id="pctAValue">50%</div>
+    </div>
+
+    <div class="slider-block">
+      <input id="pctRangeB" type="range" min="0" max="100" value="50">
+      <div class="percent" id="pctBValue">50%</div>
+    </div>
+
+    <div>
+      <label for="space">color-space</label>
+      <select id="space">
+        <option value="srgb">srgb</option>
+        <option value="srgb-linear">srgb-linear</option>
+        <option value="oklab">oklab</option>
+        <option value="xyz">xyz</option>
+        <option value="hsl">hsl</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="bottom-panel" id="bottomPanel"></div>
+</main>
+
+<script>
+(function(){
+  const $ = id=>document.getElementById(id);
+  const inputA=$('colorInputA'),inputB=$('colorInputB');
+  const hexA=$('hexA'),hexB=$('hexB'),hexMix=$('hexMix');
+  const swA=$('swatchA'),swB=$('swatchB'),mix=$('mix');
+  const pctA=$('pctRangeA'),pctB=$('pctRangeB');
+  const pctAv=$('pctAValue'),pctBv=$('pctBValue');
+  const spaceSel=$('space'),panel=$('bottomPanel');
+
+  function clamp(v){return Math.max(0,Math.min(255,Math.round(v)));}
+  function toHex(r,g,b){return '#'+[r,g,b].map(v=>clamp(v).toString(16).padStart(2,'0')).join('').toLowerCase();}
+
+  // color(srgb x y z / a) 形式を直接HEXへ変換
+  function colorFuncToHex(str){
+    const m=str.match(/color\(srgb\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)(?:\s*\/\s*([0-9.]+))?\)/i);
+    if(m){
+      const r=clamp(parseFloat(m[1])*255);
+      const g=clamp(parseFloat(m[2])*255);
+      const b=clamp(parseFloat(m[3])*255);
+      return toHex(r,g,b);
+    }
+    return null;
+  }
+
+  function normalizeColor(str){
+    if(!str) return '#000000';
+    const cf=colorFuncToHex(str);
+    if(cf) return cf;
+    const rgbm=str.match(/rgba?\(([^)]+)\)/);
+    if(rgbm){
+      const [r,g,b]=rgbm[1].split(',').map(x=>parseFloat(x));
+      return toHex(r,g,b);
+    }
+    // fallback: CSS parser
+    const c=document.createElement('canvas').getContext('2d');
+    try{c.fillStyle=str;return c.fillStyle;}catch(e){return '#000000';}
+  }
+
+  function getMixedHex(space,c1,c2,pA,pB){
+    const el=document.createElement('div');
+    el.style.display='none';
+    el.style.background=`color-mix(in ${space}, ${c1} ${pA}, ${c2} ${pB})`;
+    document.body.appendChild(el);
+    const val=getComputedStyle(el).backgroundColor||getComputedStyle(el).background;
+    document.body.removeChild(el);
+    // val は "rgb(r, g, b)" / "rgba(r,g,b,a)" のことが多い
+    const m=val && val.match(/rgba?\(([\\d.,\\s]+)\)/);
+    if(m){
+      const parts=m[1].split(',').map(x=>x.trim());
+      const r=parseFloat(parts[0]), g=parseFloat(parts[1]), b=parseFloat(parts[2]);
+      return toHex(r,g,b);
+    }
+    // fallback: normalizeColor (canvas)
+    return normalizeColor(val);
+  }
+
+  // --- 新規追加: 計算結果（computed style）を取得して srgb 用にフォーマットする処理 ---
+  function getMixedComputed(space,c1,c2,pA,pB){
+    const el=document.createElement('div');
+    el.style.display='none';
+    el.style.background=`color-mix(in ${space}, ${c1} ${pA}, ${c2} ${pB})`;
+    document.body.appendChild(el);
+    const val=getComputedStyle(el).backgroundColor||getComputedStyle(el).background;
+    document.body.removeChild(el);
+    return val;
+  }
+
+  function parseRgbOrHex(val){
+    if(!val) return null;
+    // rgb/rgba
+    let m = val.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/i);
+    if(m){
+      return {r:parseFloat(m[1]), g:parseFloat(m[2]), b:parseFloat(m[3]), a: m[4]!==undefined ? parseFloat(m[4]) : 1};
+    }
+    // hex #rrggbb
+    m = val.match(/^#([0-9a-f]{6})$/i);
+    if(m){
+      const hex=m[1];
+      return {r:parseInt(hex.slice(0,2),16), g:parseInt(hex.slice(2,4),16), b:parseInt(hex.slice(4,6),16), a:1};
+    }
+    // fallback: try canvas to resolve color
+    const c=document.createElement('canvas').getContext('2d');
+    try{
+      c.fillStyle = val;
+      const resolved = c.fillStyle; // will be hex
+      const mm = resolved.match(/^#([0-9a-f]{6})$/i);
+      if(mm){
+        const hex=mm[1];
+        return {r:parseInt(hex.slice(0,2),16), g:parseInt(hex.slice(2,4),16), b:parseInt(hex.slice(4,6),16), a:1};
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function toSRGBColorString(val){
+    const p = parseRgbOrHex(val);
+    if(!p) return val;
+    const rf=(p.r/255).toFixed(3);
+    const gf=(p.g/255).toFixed(3);
+    const bf=(p.b/255).toFixed(3);
+    // trim trailing zeros for cleaner output
+    const trim = s => s.replace(/\.?0+$/,'').replace(/(\.\d{1,3})0+$/,'$1');
+    const rS = trim(rf), gS = trim(gf), bS = trim(bf);
+    if(p.a !== undefined && p.a < 1){
+      const aS = parseFloat(p.a.toFixed(3)).toString();
+      return `color(srgb ${rS} ${gS} ${bS} / ${aS})`;
+    }
+    return `color(srgb ${rS} ${gS} ${bS})`;
+  }
+
+  function rgbToHslObj(r,g,b){
+    // r,g,b: 0-255
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    if(max !== min){
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch(max){
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    return { h: h * 360, s: s, l: l };
+  }
+
+  // Mix two colors in HSL space using weights a and b (numbers)
+  function mixHslSpace(c1,c2,a,b){
+    const p1 = parseRgbOrHex(c1);
+    const p2 = parseRgbOrHex(c2);
+    if(!p1 || !p2) return null;
+    const h1 = rgbToHslObj(p1.r,p1.g,p1.b);
+    const h2 = rgbToHslObj(p2.r,p2.g,p2.b);
+    const sum = (a + b) || 1;
+    const w1 = a / sum;
+    const w2 = b / sum;
+    // interpolate saturation and lightness linearly
+    const s = h1.s * w1 + h2.s * w2;
+    const l = h1.l * w1 + h2.l * w2;
+    // interpolate hue on circle, weighted by saturation (to account for chroma)
+    const r1 = (h1.h * Math.PI) / 180;
+    const r2 = (h2.h * Math.PI) / 180;
+    const x = w1 * (h1.s * Math.cos(r1)) + w2 * (h2.s * Math.cos(r2));
+    const y = w1 * (h1.s * Math.sin(r1)) + w2 * (h2.s * Math.sin(r2));
+    let hueDeg;
+    if(Math.abs(x) < 1e-6 && Math.abs(y) < 1e-6){
+      // achromatic-ish: fall back to weighted average of degrees (simple)
+      let dh = h2.h - h1.h;
+      if(dh > 180) dh -= 360;
+      if(dh < -180) dh += 360;
+      hueDeg = (h1.h + dh * w2 + 360) % 360;
+    } else {
+      hueDeg = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    }
+    const hRound = Math.round(hueDeg);
+    const sPercent = +( (s * 100).toFixed(1) ).toString().replace(/\.0$/,'');
+    const lPercent = +( (l * 100).toFixed(1) ).toString().replace(/\.0$/,'');
+    return `color(hsl ${hRound}deg ${sPercent}% ${lPercent}%)`;
+  }
+
+  function toHSLColorString(val){
+    // kept for fallback: convert computed rgb/hex to hsl string
+    const p = parseRgbOrHex(val);
+    if(!p) return val;
+    const hsl = rgbToHslObj(p.r,p.g,p.b);
+    const h = Math.round(hsl.h);
+    const s = +( (hsl.s*100).toFixed(1) ).toString().replace(/\.0$/,'');
+    const l = +( (hsl.l*100).toFixed(1) ).toString().replace(/\.0$/,'');
+    return `color(hsl ${h}deg ${s}% ${l}%)`;
+  }
+
+  function update(){
+    const c1=inputA.value,c2=inputB.value;
+    const a=Number(pctA.value),b=Number(pctB.value);
+    const pa=a+'%',pb=b+'%';
+    const sp=spaceSel.value;
+
+    swA.style.background=c1;swB.style.background=c2;
+    hexA.textContent=c1;hexB.textContent=c2;
+    pctAv.textContent=a+'%';pctBv.textContent=b+'%';
+
+    mix.style.background=`color-mix(in ${sp}, ${c1} ${pa}, ${c2} ${pb})`;
+
+    // 中央表示は sRGB 基準の HEX
+    hexMix.textContent=getMixedHex('srgb',c1,c2,pa,pb);
+
+    const spaces=['srgb','srgb-linear','oklab','xyz','hsl'];
+    panel.innerHTML=spaces.map(s=>{
+      // srgb: compute from computed style and format as color(srgb ...)
+      if(s === 'srgb'){
+        const raw = getMixedComputed(s,c1,c2,pa,pb);
+        const formatted = toSRGBColorString(raw);
+        return `<div><span class="space-label">${s}:</span><span class="space-value">${formatted}</span></div>`;
+      } else if(s === 'hsl'){
+        // compute HSL-space mix in JS so it reflects mixing in HSL space (not the computed sRGB)
+        const formatted = mixHslSpace(c1,c2,a,b) || toHSLColorString(getMixedComputed(s,c1,c2,pa,pb));
+        return `<div><span class="space-label">${s}:</span><span class="space-value">${formatted}</span></div>`;
+      } else {
+        const h=getMixedHex(s,c1,c2,pa,pb);
+        return `<div><span class="space-label">${s}:</span><span class="space-value">${h}</span></div>`;
+      }
+    }).join('');
+
+    const p=new URLSearchParams({color1:c1,color2:c2,pctA:a,pctB:b,space:sp});
+    history.replaceState(null,'',location.pathname+'?'+p.toString());
+  }
+
+  [inputA,inputB,pctA,pctB,spaceSel].forEach(e=>e.addEventListener('input',update));
+  const ps=new URLSearchParams(location.search);
+  if(ps.get('color1'))inputA.value=ps.get('color1');
+  if(ps.get('color2'))inputB.value=ps.get('color2');
+  if(ps.get('pctA'))pctA.value=ps.get('pctA');
+  if(ps.get('pctB'))pctB.value=ps.get('pctB');
+  if(ps.get('space'))spaceSel.value=ps.get('space');
+  update();
+})();
+</script>
+</body>
+</html>
