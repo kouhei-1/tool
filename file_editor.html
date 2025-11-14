@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Content Viewer</title>
+    <link rel="stylesheet" href="file_editor.css" type="text/css">
+    <script src="./file_editor.js"></script>
+</head>
+    
+<body>
+    <a href=".">Tools</a><br>
+    <h2>File Content Viewer</h2>
+    <br>
+    <br>
+    <div id="filename_form">
+        <label for="filename">File Name:</label>
+        <input type="text" id="filename" placeholder="Enter file name">
+        <br>
+        <label for="extension">Extension:</label>
+        <input type="text" id="extension" placeholder="Enter extension">
+    </div>
+    <br>
+    <input type="file" id="file_input" onchange="readFile()">
+    <br>
+    <textarea id="file_content" placeholder="File content will appear here"></textarea>
+    <br>
+    <button id="download_button" onclick="downloadFile()">Download</button>
+</body>
+</html>

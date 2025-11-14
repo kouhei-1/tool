@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAV 波形切り出し & 再生</title>
+    <style>
+        body {font-family: 'Arial', sans-serif; text-align: center; background-color: #121212; color: #E0E0E0; margin: 0;}
+        input, button {margin: 5px; padding: 10px; border: none; border-radius: 5px; font-size: 16px;}
+        input {background-color: #1E1E1E; color: #E0E0E0; width: 80px; text-align: center;}
+        button {background-color: #333; color: #FFF; cursor: pointer; transition: 0.3s;}
+        button:hover {background-color: #555;}
+        canvas {display: block; margin: 10px auto; border-radius: 5px; background-color: #1E1E1E;}
+        a {position: absolute; top: 10px; left: 10px; color: #FFF; font-size: 14px; text-decoration: none; padding: 5px 10px; background-color: #333; border-radius: 5px;}
+        a:hover {background-color: #555;}
+
+        /* カスタムファイル選択ボタン */
+        .file-input-container {
+            display: inline-block;
+            position: relative;
+        }
+        
+        .file-input-container input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        .custom-file-button {
+            display: inline-block;
+            background-color: #444;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <a href=".">tool-home</a>
+    <h2>WAV 波形切り出し & 再生</h2>
+
+    <div class="file-input-container">
+        <label class="custom-file-button">
+            ファイルを選択
+            <input type="file" id="fileInput" accept="audio/wav">
+        </label>
+    </div>
+
+    <br>
+    <label>開始秒:<input type="number" id="startTime" step="0.1" min="0" value="0"></label>
+    <label>終了秒:<input type="number" id="endTime" step="0.1" min="0" value="1"></label>
+    <button onclick="playCutAudio()">選択部分を再生</button>
+
+    <h3>全体の波形</h3>
+    <canvas id="fullWaveform" width="800" height="200"></canvas>
+    <h3>切り出し部分の拡大波形</h3>
+    <canvas id="cutWaveform" width="800" height="200"></canvas>
+
+    <script>
+        let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let audioBuffer = null, cutBuffer = null;
+
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.readAsArrayBuffer(file);
+                reader.onload = function() {
+                    audioContext.decodeAudioData(reader.result, function(buffer) {
+                        audioBuffer = buffer;
+                        drawWaveform(buffer, document.getElementById("fullWaveform"));
+                        updateCutWaveform();
+                    });
+                };
+            }
+        });
+
+        document.getElementById('startTime').addEventListener('input', updateCutWaveform);
+        document.getElementById('endTime').addEventListener('input', updateCutWaveform);
+
+        function updateCutWaveform() {
+            if (!audioBuffer) return;
+            const startTime = parseFloat(document.getElementById('startTime').value),
+                  endTime = parseFloat(document.getElementById('endTime').value);
+            if (endTime <= startTime) return;
+
+            const sampleRate = audioBuffer.sampleRate,
+                  startSample = Math.floor(startTime * sampleRate),
+                  endSample = Math.floor(endTime * sampleRate),
+                  cutData = audioBuffer.getChannelData(0).slice(startSample, endSample);
+
+            cutBuffer = audioContext.createBuffer(1, cutData.length, sampleRate);
+            cutBuffer.copyToChannel(cutData, 0);
+            drawWaveform({ sampleRate, getChannelData: () => cutData }, document.getElementById("cutWaveform"));
+        }
+
+        function playCutAudio() {
+            if (!cutBuffer) {
+                alert("先にファイルを選択し、範囲を設定してください");
+                return;
+            }
+            const source = audioContext.createBufferSource();
+            source.buffer = cutBuffer;
+            source.connect(audioContext.destination);
+            source.start();
+        }
+
+        function drawWaveform(buffer, canvas) {
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#1E1E1E";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const width = canvas.width, height = canvas.height,
+                  data = buffer.getChannelData(0),
+                  step = Math.ceil(data.length / width),
+                  amp = height / 2;
+
+            ctx.beginPath();
+            ctx.moveTo(0, amp);
+            for (let i = 0; i < width; i++) {
+                const min = Math.min(...data.slice(i * step, (i + 1) * step)),
+                      max = Math.max(...data.slice(i * step, (i + 1) * step));
+                ctx.lineTo(i, (1 - max) * amp);
+                ctx.lineTo(i, (1 - min) * amp);
+            }
+            ctx.strokeStyle = "white";
+            ctx.stroke();
+        }
+    </script>
+</body>
+</html>

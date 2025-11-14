@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>素数リスト生成</title>
+</head>
+<body>
+  <a href="../limited.html">Limited_tools</a>
+  <h1>PrimeNumbers</h1>
+  上限値を入力するとそこまでの素数がCSV形式としてダウンロードできます。<br>
+  <input type="number" id="upperLimit" placeholder="上限値を入力"><br>
+  <button onclick="generatePrimeNumbers()">生成</button><br>
+  delimiter options:
+  <select id="delimiter">
+    <option value="enter">enter</option>
+    <option value="comma">comma</option>
+  </select>
+  <a id="downloadLink" download="prime_numbers.csv" style="display: none;">ダウンロード</a>
+  <script src="./PrimeNumbers.js"></script>
+</body>
+</html>

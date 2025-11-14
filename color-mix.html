@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>color-mix viewer</title>
+<style>
+:root {
+  --bg:#ccc; --panel-bg:#f5f5f5; --muted:#555; --radius:40px;
+  --select-bg:#fff; --select-border:#aaa; --select-text:#222;
+}
+body {
+  margin:0; background:var(--bg); font-family:-apple-system,system-ui,"Noto Sans JP",sans-serif;
+}
+a.back {
+  position:fixed; top:12px; left:12px;
+  font-size:14px; color:#333; text-decoration:none;
+  background:#fff; padding:6px 10px; border-radius:8px; border:1px solid #ddd;
+}
+main {
+  max-width:960px; margin:0 auto; padding:40px 20px;
+  display:flex; flex-direction:column; align-items:center;
+}
+.demo {display:flex; align-items:center; justify-content:center; gap:30px; flex-wrap:wrap;}
+.swatch,.mix {position:relative; border-radius:var(--radius); box-shadow:0 6px 20px rgba(0,0,0,0.1); overflow:hidden;}
+.swatch{width:180px;height:180px;}
+.mix{width:240px;height:240px;}
+input[type="color"]{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;}
+.label{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-weight:600;color:#000;text-shadow:0 0 5px rgba(255,255,255,0.7);}
+.controls{margin-top:24px;display:flex;gap:24px;flex-wrap:wrap;justify-content:center;align-items:center;}
+.range-container{text-align:center;}
+input[type="range"]{width:200px;}
+.percent{font-size:13px;color:var(--muted);}
+
+/*セレクトボックス */
+select {
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  position:relative;
+  padding:8px 36px 8px 12px;
+  font-size:14px;
+  color:var(--select-text);
+  background:var(--select-bg);
+  border:1px solid var(--select-border);
+  border-radius:10px;
+  cursor:pointer;
+  box-shadow:0 2px 4px rgba(0,0,0,0.1);
+  transition:box-shadow 0.2s,border 0.2s;
+}
+select:hover {
+  border-color:#777;
+  box-shadow:0 3px 6px rgba(0,0,0,0.15);
+}
+select:focus {
+  outline:none;
+  border-color:#333;
+}
+select::after {
+  content:'';
+  position:absolute;
+  right:12px;
+  top:50%;
+  margin-top:-3px;
+  border-left:5px solid transparent;
+  border-right:5px solid transparent;
+  border-top:6px solid #555;
+  pointer-events:none;
+}
+
+@media(max-width:760px){
+  .demo{flex-direction:column;}
+  .mix{width:200px;height:200px;}
+  select{width:160px;}
+}
+
+.bottom-panel {
+  margin-top:24px; background:var(--panel-bg); border-radius:12px;
+  padding:14px 18px; font-family:monospace; font-size:14px;
+  width:100%; max-width:600px;
+}
+.bottom-panel div{display:flex;justify-content:space-between;padding:2px 0;}
+.label2{color:var(--muted);}
+</style>
+</head>
+<body>
+<a class="back" href="../">tool</a>
+<main>
+  <div class="demo">
+    <div class="swatch" id="swA"><input type="color" id="colorA" value="#bdbdbd"><div class="label" id="hexA">#bdbdbd</div></div>
+    <div class="mix" id="mix"><div class="label" id="hexMix">#999999</div></div>
+    <div class="swatch" id="swB"><input type="color" id="colorB" value="#4a4a4a"><div class="label" id="hexB">#4a4a4a</div></div>
+  </div>
+
+  <div class="controls">
+    <div class="range-container"><input type="range" id="rA" min="0" max="100" value="50"><div class="percent" id="pA">50%</div></div>
+    <div class="range-container"><input type="range" id="rB" min="0" max="100" value="50"><div class="percent" id="pB">50%</div></div>
+    <select id="space">
+      <option value="srgb">srgb</option>
+      <option value="srgb-linear">srgb-linear</option>
+      <option value="oklab">oklab</option>
+      <option value="xyz">xyz</option>
+      <option value="hsl">hsl</option>
+    </select>
+  </div>
+
+  <div class="bottom-panel" id="panel"></div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const colorA=$('colorA'),colorB=$('colorB'),hexA=$('hexA'),hexB=$('hexB'),hexMix=$('hexMix'),mix=$('mix');
+const rA=$('rA'),rB=$('rB'),pA=$('pA'),pB=$('pB'),spaceSel=$('space'),panel=$('panel');
+
+// Utility
+function clamp(v,min=0,max=1){return Math.min(max,Math.max(min,v));}
+function hexToRgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255};}
+function rgbToHex(r,g,b){return'#'+[r,g,b].map(x=>Math.round(x).toString(16).padStart(2,'0')).join('');}
+
+// sRGB ↔ linear
+function srgbToLinearComp(u){u/=255;return u<=0.04045?u/12.92:((u+0.055)/1.055)**2.4;}
+function linearToSrgbComp(u){return u<=0.0031308?u*12.92:1.055*(u**(1/2.4))-0.055;}
+function rgbToLinear(rgb){return{r:srgbToLinearComp(rgb.r),g:srgbToLinearComp(rgb.g),b:srgbToLinearComp(rgb.b)};}
+function linearToRgb(l){return{r:clamp(linearToSrgbComp(l.r))*255,g:clamp(linearToSrgbComp(l.g))*255,b:clamp(linearToSrgbComp(l.b))*255};}
+
+// linear ↔ XYZ
+function linearToXyz(l){
+  return{
+    x:0.4124564*l.r+0.3575761*l.g+0.1804375*l.b,
+    y:0.2126729*l.r+0.7151522*l.g+0.0721750*l.b,
+    z:0.0193339*l.r+0.1191920*l.g+0.9503041*l.b
+  };
+}
+function xyzToLinear(xyz){
+  return{
+    r:3.2404542*xyz.x-1.5371385*xyz.y-0.4985314*xyz.z,
+    g:-0.9692660*xyz.x+1.8760108*xyz.y+0.0415560*xyz.z,
+    b:0.0556434*xyz.x-0.2040259*xyz.y+1.0572252*xyz.z
+  };
+}
+
+// XYZ ↔ Oklab
+function xyzToOklab(X,Y,Z){
+  const l=0.818933*X+0.361867*Y-0.12886*Z;
+  const m=0.032985*X+0.929312*Y+0.036146*Z;
+  const s=0.0482*X+0.264366*Y+0.633852*Z;
+  const l_=Math.cbrt(Math.max(l,0)),m_=Math.cbrt(Math.max(m,0)),s_=Math.cbrt(Math.max(s,0));
+  return{
+    L:0.210454*l_+0.793618*m_-0.004072*s_,
+    a:1.977998*l_-2.428592*m_+0.450594*s_,
+    b:0.025904*l_+0.782772*m_-0.808676*s_
+  };
+}
+function oklabToXyz(L,a,b){
+  const l_ = L + 0.396337*a + 0.215803*b;
+  const m_ = L - 0.105561*a - 0.063854*b;
+  const s_ = L - 0.089484*a - 1.291485*b;
+  const l = l_**3, m = m_**3, s = s_**3;
+  return{
+    x:1.227013*l -0.557799*m +0.281256*s,
+    y:-0.040580*l +1.112257*m -0.071676*s,
+    z:-0.076381*l -0.421482*m +1.586163*s
+  };
+}
+
+// RGB ↔ HSL
+function rgbToHsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b);
+  let h,s,l=(max+min)/2;
+  if(max===min){h=s=0;}
+  else{
+    const d=max-min;
+    s=l>0.5?d/(2-max-min):d/(max+min);
+    switch(max){
+      case r:h=(g-b)/d+(g<b?6:0);break;
+      case g:h=(b-r)/d+2;break;
+      case b:h=(r-g)/d+4;break;
+    }
+    h/=6;
+  }
+  return{h,s,l};
+}
+function hslToRgb(h,s,l){
+  let r,g,b;
+  if(s===0){r=g=b=l;}
+  else{
+    const hue2rgb=(p,q,t)=>{
+      if(t<0)t+=1;if(t>1)t-=1;
+      if(t<1/6)return p+(q-p)*6*t;
+      if(t<1/2)return q;
+      if(t<2/3)return p+(q-p)*(2/3-t)*6;
+      return p;
+    };
+    const q=l<0.5?l*(1+s):l+s-l*s;
+    const p=2*l-q;
+    r=hue2rgb(p,q,h+1/3);
+    g=hue2rgb(p,q,h);
+    b=hue2rgb(p,q,h-1/3);
+  }
+  return{r:r*255,g:g*255,b:b*255};
+}
+
+// 混色関数
+function mixColors(space,hex1,hex2,wa,wb){
+  const a=hexToRgb(hex1),b=hexToRgb(hex2);
+  let res;
+  switch(space){
+    case"srgb":
+      res={r:(a.r*wa+b.r*wb)/(wa+wb),g:(a.g*wa+b.g*wb)/(wa+wb),b:(a.b*wa+b.b*wb)/(wa+wb)};
+      break;
+    case"srgb-linear":{
+      const la=rgbToLinear(a),lb=rgbToLinear(b);
+      const lMix={r:(la.r*wa+lb.r*wb)/(wa+wb),g:(la.g*wa+lb.g*wb)/(wa+wb),b:(la.b*wa+lb.b*wb)/(wa+wb)};
+      res=linearToRgb(lMix);
+      break;}
+    case"xyz":{
+      const xa=linearToXyz(rgbToLinear(a)),xb=linearToXyz(rgbToLinear(b));
+      const xMix={x:(xa.x*wa+xb.x*wb)/(wa+wb),y:(xa.y*wa+xb.y*wb)/(wa+wb),z:(xa.z*wa+xb.z*wb)/(wa+wb)};
+      res=linearToRgb(xyzToLinear(xMix));
+      break;}
+    case"oklab":{
+      const xa=linearToXyz(rgbToLinear(a)),xb=linearToXyz(rgbToLinear(b));
+      const oa=xyzToOklab(xa.x,xa.y,xa.z),ob=xyzToOklab(xb.x,xb.y,xb.z);
+      const oMix={
+        L:(oa.L*wa+ob.L*wb)/(wa+wb),
+        a:(oa.a*wa+ob.a*wb)/(wa+wb),
+        b:(oa.b*wa+ob.b*wb)/(wa+wb)
+      };
+      const xyz=oklabToXyz(oMix.L,oMix.a,oMix.b);
+      res=linearToRgb(xyzToLinear(xyz));
+      break;}
+    case"hsl":{
+      const ha=rgbToHsl(a.r,a.g,a.b),hb=rgbToHsl(b.r,b.g,b.b);
+      const h=(ha.h*wa+hb.h*wb)/(wa+wb),s=(ha.s*wa+hb.s*wb)/(wa+wb),l=(ha.l*wa+hb.l*wb)/(wa+wb);
+      res=hslToRgb(h,s,l);
+      break;}
+  }
+  return res;
+}
+
+function update(){
+  const c1=colorA.value,c2=colorB.value,space=spaceSel.value;
+  const wa=+rA.value,wb=+rB.value;
+  pA.textContent=wa+"%"; pB.textContent=wb+"%";
+  const mixRes=mixColors(space,c1,c2,wa,wb);
+  const hex=rgbToHex(mixRes.r,mixRes.g,mixRes.b);
+  $('swA').style.background=c1; $('swB').style.background=c2;
+  hexA.textContent=c1; hexB.textContent=c2;
+  mix.style.background=hex; hexMix.textContent=hex;
+
+  const lin=rgbToLinear(mixRes);
+  const xyz=linearToXyz(lin);
+  const ok=xyzToOklab(xyz.x,xyz.y,xyz.z);
+  const hsl=rgbToHsl(mixRes.r,mixRes.g,mixRes.b);
+  panel.innerHTML=`
+    <div><span class="label2">srgb:</span><span>${hex}</span></div>
+    <div><span class="label2">srgb-linear:</span><span>(${lin.r.toFixed(3)}, ${lin.g.toFixed(3)}, ${lin.b.toFixed(3)})</span></div>
+    <div><span class="label2">xyz:</span><span>(${xyz.x.toFixed(4)}, ${xyz.y.toFixed(4)}, ${xyz.z.toFixed(4)})</span></div>
+    <div><span class="label2">oklab:</span><span>(L:${ok.L.toFixed(4)}, a:${ok.a.toFixed(4)}, b:${ok.b.toFixed(4)})</span></div>
+    <div><span class="label2">hsl:</span><span>(${Math.round(hsl.h*360)}°, ${(hsl.s*100).toFixed(1)}%, ${(hsl.l*100).toFixed(1)}%)</span></div>`;
+  // URL同期
+  const q=new URLSearchParams({color1:c1,color2:c2,wa,wb,space});
+  history.replaceState(null,'',location.pathname+'?'+q);
+}
+[colorA,colorB,rA,rB,spaceSel].forEach(e=>e.addEventListener('input',update));
+
+// URL読み込み
+(function(){
+  const ps=new URLSearchParams(location.search);
+  if(ps.get('color1'))colorA.value=ps.get('color1');
+  if(ps.get('color2'))colorB.value=ps.get('color2');
+  if(ps.get('wa'))rA.value=ps.get('wa');
+  if(ps.get('wb'))rB.value=ps.get('wb');
+  if(ps.get('space'))spaceSel.value=ps.get('space');
+  update();
+})();
+</script>
+</body>
+</html>

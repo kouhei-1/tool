@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .UTC_form{
+        width:40px;
+      }
+    </style>
+  </head>
+  <body>
+    <a href=".">Tools</a><br><br>
+    UnixTime:
+    <input type="number" id="Unix_form" name="unixtime" required minlength="4" maxlength="8" placeholder="Unix time here"/><br>
+    UTC time: <span id="UTC_time"></span><br><br>
+    
+    UTC time:
+    <input type="number" class="UTC_form" name="year" maxlength="8" placeholder="year"/>
+    -
+    <input type="number" class="UTC_form" name="month" maxlength="2" placeholder="month"/>
+    -
+    <input type="number" class="UTC_form" name="day" maxlength="2" placeholder="day"/>
+    T
+    <input type="number" class="UTC_form" name="hours" maxlength="2" placeholder="hour"/>
+    :
+    <input type="number" class="UTC_form" name="minutes" maxlength="2" placeholder="minute"/>
+    :
+    <input type="number" class="UTC_form" name="seconds" maxlength="2" placeholder="second"/><br>
+    Unix time: <span id="Unix_time"></span>
+    
+    <script>
+      // Unix → UTC
+      function unixToUtc(unixTime) {
+        if (isNaN(unixTime) || unixTime < 0) {
+          return "Invalid Unix timestamp";
+        }
+        const date = new Date(unixTime * 1000);
+        return date.toISOString();
+      }
+
+      document.getElementById("Unix_form").addEventListener("keydown", function(event) {
+        if (event.keyCode === 13) {
+          const unixTime = Number(document.getElementById("Unix_form").value);
+          const utcTime = unixToUtc(unixTime);
+          if (utcTime === "Invalid Unix timestamp") {
+            alert(utcTime);
+          } else {
+            document.getElementById("UTC_time").textContent = utcTime;
+          }
+        }
+      });
+
+      // UTC → Unix
+      document.querySelectorAll('.UTC_form').forEach(function(input) {
+        input.addEventListener("keydown", function(event) {
+          if (event.keyCode === 13) {
+            const year = document.getElementsByName("year")[0].value;
+            const month = document.getElementsByName("month")[0].value;
+            const day = document.getElementsByName("day")[0].value;
+            const hours = document.getElementsByName("hours")[0].value;
+            const minutes = document.getElementsByName("minutes")[0].value;
+            const seconds = document.getElementsByName("seconds")[0].value;
+            const date = new Date(Date.UTC(
+              Number(year),
+              Number(month) - 1,
+              Number(day),
+              Number(hours),
+              Number(minutes),
+              Number(seconds)
+            ));
+            const unixTime = Math.floor(date.getTime() / 1000);
+            document.getElementById("Unix_time").textContent = unixTime;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

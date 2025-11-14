@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Encoder/Decoder</title>
+    <link rel="stylesheet" href="text_encoder.css" type="text/css">
+
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/1.0.30/encoding.min.js"></script>
+    ↑ShiJis対応用
+    -->
+</head>
+<body>
+    <a href="." id="tool_link">Tools</a><br>
+    <h2>Text Encoder/Decoder</h2>
+    <div>
+        <label for="encoding_select">Select Encoding:</label>
+        <select id="encoding_select" onchange="ChangeEncoding()">
+            <option value="base64">Base64</option>
+            <option value="utf-8">UTF-8</option>
+            <option value="utf-16">UTF-16</option>
+            <!--
+            <option value="shift_jis">Shift_JIS</option>
+            -->
+        </select>
+    </div>
+    <br>
+    <div>
+        <h3>Encode</h3>
+        <textarea id="text_input" rows="5" cols="50" placeholder="Enter text to encode"></textarea><br>
+        <button onclick="encodeText()">Encode</button>
+    </div>
+    <br>
+    <div>
+        <h3>Decode</h3>
+        <textarea id="result_output" rows="5" cols="50" placeholder="Encoded text will appear here"></textarea><br>
+        <button onclick="decodeText()">Decode</button>
+    </div>
+
+    <script src="./text_encoder.js"></script><br>
+
+    <p id="small_text">UTF-8は%エスケープシーケンス,UTF-16は\uエスケープシーケンスで出力されます。<br></p>
+</body>
+</html>
